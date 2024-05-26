@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quick Quiz</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="container">
+    <div id="home" class="flex-center flex-column">
+        <h1>Quiz</h1>
+        <a class="btn" href="#" onclick="startQuiz()">Play</a>
+    </div>
+
+    <div id="game" class="game-box hidden">
+        <div class="question-container">
+            <h2 id="question">Question goes here</h2>
+        </div>
+        <div class="answer-container">
+            <button class="ans-button" data-answer="1">Choice 1</button>
+            <button class="ans-button" data-answer="2">Choice 2</button>
+            <button class="ans-button" data-answer="3">Choice 3</button>
+            <button class="ans-button" data-answer="4">Choice 4</button>
+        </div>
+        <div class="headUp-disp">
+            <div class="score-display">Score: <span id="score">0</span></div>
+            <div class="question-number-display">
+                Question: <span id="question-number">1</span>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div id="progress" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <div id="end" class="flex-center flex-column hidden">
+        <h1>Quiz Completed</h1>
+        <p>Your score: <span id="final-score"></span></p>
+        <a class="btn" href="#" onclick="restartQuiz()">Restart</a><br />
+
+        <a class="btn" href="#" onclick="returnHome()">Home</a>
+    </div>
+</div>
+
+
+<script>
+    const questions = [
+        {
+            question: "Which Italian manufacturer is known for its prancing horse logo and famous supercars like the 488 and the F8 Tributo?",
+            choice1: "Lamborghini",
+            choice2: "Ferrari",
+            choice3: "Maserati",
+            choice4: "Alfa Romeo",
+            answer: 2,
+        },
+        {
+            question: "What is the name of the McLaren supercar that set the fastest production car speed record in 1998?",
+            choice1: "McLaren P1",
+            choice2: "McLaren 720S",
+            choice3: "McLaren F1",
+            choice4: "McLaren Senna",
+            answer: 3,
+        },
+        {
+            question: "Which supercar manufacturer produces the Aventador and the Huracán models?",
+            choice1: "Pagani",
+            choice2: "Bugatti",
+            choice3: "Lamborghini",
+            choice4: "Ferrari",
+            answer: 3,
+        },
+        {
+            question: "The Bugatti Veyron, known for its speed, has how many cylinders in its engine?",
+            choice1: "8",
+            choice2: "10",
+            choice3: "12",
+            choice4: "16",
+            answer: 4,
+        },
+        {
+            question: "Which country is the automaker Koenigsegg from?",
+            choice1: "Germany",
+            choice2: "Italy",
+            choice3: "Sweden",
+            choice4: "France",
+            answer: 3,
+        },
+        {
+            question: "What is the name of Porsche's hybrid supercar, which combines electric and gasoline power?",
+            choice1: "911 Turbo S",
+            choice2: "918 Spyder",
+            choice3: "Panamera Turbo S E-Hybrid",
+            choice4: "Taycan",
+            answer: 2,
+        },
+        {
+            question: "Which supercar brand's logo features a raging bull?",
+            choice1: "Ferrari",
+            choice2: "Lamborghini",
+            choice3: "Maserati",
+            choice4: "Alfa Romeo",
+            answer: 2,
+        },
+        {
+            question: "The Aston Martin Valkyrie is a collaboration between Aston Martin and which Formula 1 team?",
+            choice1: "Mercedes AMG Petronas",
+            choice2: "Red Bull Racing",
+            choice3: "McLaren Racing",
+            choice4: "Scuderia Ferrari",
+            answer: 2,
+        },
+        {
+            question: "The LaFerrari is Ferrari's first production car to use what type of powertrain?",
+            choice1: "Fully electric",
+            choice2: "Diesel",
+            choice3: "Hybrid",
+            choice4: "Hydrogen",
+            answer: 3,
+        },
+        {
+            question: "Which hypercar from Pagani is known for its distinct carbon fiber body and V12 engine?",
+            choice1: "Pagani Zonda",
+            choice2: "Pagani Huayra",
+            choice3: "Pagani C12",
+            choice4: "Pagani Utopia",
+            answer: 2,
+        },
+    ];
+
+    let current = 0;
+    let score = 0;
+    let questionNumber = 1;
+
+    const questionEl = document.getElementById("question");
+    const answerButtons = document.querySelectorAll(".ans-button");
+    const scoreEl = document.getElementById("score");
+    const questionNumEl = document.getElementById("question-number");
+    const progressEl = document.getElementById("progress");
+
+    function displayQuestion() {
+        const question = questions[current];
+        questionEl.textContent = question.question;
+        answerButtons.forEach((btn, index) => {
+            btn.textContent = question[`choice${index + 1}`];
+            btn.dataset.answer = (index + 1).toString();  // Add data-answer attribute
+        });
+        updateProgress();
+    }
+
+    function updateProgress() {
+        const progress = ((current + 1) / questions.length) * 100;
+        progressEl.style.width = `${progress}%`;
+    }
+
+    function showResult(isCorrect) {
+        answerButtons.forEach((btn) => {
+            btn.disabled = true;
+            if (btn.dataset.answer === questions[current].answer.toString()) {
+                btn.classList.add("correct");
+            } else {
+                btn.classList.add("incorrect");
+            }
+        });
+
+        setTimeout(() => {
+            answerButtons.forEach((btn) => {
+                btn.classList.remove("correct", "incorrect");
+                btn.disabled = false;
+            });
+            if (isCorrect) {
+                score += 10;
+            }
+            scoreEl.textContent = score;
+            current++;
+            questionNumber++;
+            questionNumEl.textContent = questionNumber;
+            if (current < questions.length) {
+                displayQuestion();
+            } else {
+                showEndScreen();
+            }
+        }, 1000);
+    }
+
+    answerButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const selectedAnswer = btn.dataset.answer;
+            const isCorrect = selectedAnswer === questions[current].answer.toString();
+            showResult(isCorrect);
+        });
+    });
+
+    function returnHome() {
+        document.getElementById("game").classList.add("hidden");
+        document.getElementById("end").classList.add("hidden"); // Hide the end screen as well
+        document.getElementById("home").classList.remove("hidden");
+        // restartQuiz();
+    }
+
+    function showEndScreen() {
+        document.getElementById("game").classList.add("hidden");
+        document.getElementById("end").classList.remove("hidden");
+        document.getElementById("final-score").textContent = score;
+    }
+
+    function restartQuiz() {
+        current = 0;
+        score = 0;
+        questionNumber = 1;
+        scoreEl.textContent = score;
+        questionNumEl.textContent = questionNumber;
+        progressEl.style.width = "0%";
+        document.getElementById("end").classList.add("hidden");
+        document.getElementById("game").classList.remove("hidden");
+        displayQuestion();
+    }
+
+    function startQuiz() {
+        document.getElementById("home").classList.add("hidden");
+        document.getElementById("game").classList.remove("hidden");
+        displayQuestion();
+    }
+
+    document.getElementById("home-btn").addEventListener("click", returnHome);
+    document.getElementById("restart-btn").addEventListener("click", restartQuiz);
+    document.getElementById("start-btn").addEventListener("click", startQuiz);
+
+
+</script>
+
+</body>
+</html>
